@@ -10,22 +10,24 @@ import (
 	"os"
 )
 
-func RunServer(ctx context.Context,v1API v1.ToDoServiceServer,port string) error{
-	listen,err:=net.Listen("tcp",":"+port)
-	if err!=nil{
+func RunServer(ctx context.Context, v1API v1.ToDoServiceServer, port string) error {
+	listen, err := net.Listen("tcp", ":"+port)
+	if err != nil {
 		return err
 	}
 
-	opts:=[]grpc.ServerOption{}
-	opts = middleware.AddLogging(logger.Log,opts)
+	opts := []grpc.ServerOption{}
+	opts = middleware.AddLogging(logger.Log, opts)
 
-	server :=grpc.NewServer(opts...)
-	v1.RegisterToDoServiceServer(server,v1API)
-	c:=make(chan os.Signal,1)
+	server := grpc.NewServer(opts...)
+	v1.RegisterToDoServiceServer(server, v1API)
+
+	c := make(chan os.Signal, 1)
 	go func() {
-		for range c{
+		for range c {
 			logger.Log.Warn("shutting down gRPC server...")
 			server.GracefulStop()
+			// grpc server 退出了,通知主协程,目前主协程处缺失这部分代码
 			<-ctx.Done()
 		}
 	}()

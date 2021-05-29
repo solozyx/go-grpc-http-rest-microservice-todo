@@ -27,6 +27,7 @@ func main() {
 	defer conn.Close()
 
 	c := v1.NewToDoServiceClient(conn)
+	// grpc client 设置5秒超时
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -48,7 +49,7 @@ func main() {
 	}
 	log.Printf("Create result%v", res1)
 	id := res1.Id
-	fmt.Sprintf("%v",res1)
+	fmt.Sprintf("%v", res1)
 
 	req2 := v1.ReadRequest{Api: apiVersion, Id: id}
 	res2, err := c.Read(ctx, &req2)
@@ -57,38 +58,37 @@ func main() {
 	}
 	log.Printf("Read reslut %v", res2)
 
-	req3 :=v1.UpdateRequest{
-		Api:                  apiVersion,
-		ToDo:                 &v1.ToDo{
-			Id:                   res2.ToDo.Id,
-			Title:                res2.ToDo.Title,
-			Description:          res2.ToDo.Description+" updated",
-			Reminder:             res2.ToDo.Reminder,
+	req3 := v1.UpdateRequest{
+		Api: apiVersion,
+		ToDo: &v1.ToDo{
+			Id:          res2.ToDo.Id,
+			Title:       res2.ToDo.Title,
+			Description: res2.ToDo.Description + " updated",
+			Reminder:    res2.ToDo.Reminder,
 		},
 	}
-	res3,err:=c.Update(ctx,&req3)
-	if err!=nil{
-		log.Fatal("更新失败%v",err)
+	res3, err := c.Update(ctx, &req3)
+	if err != nil {
+		log.Fatal("更新失败%v", err)
 	}
-	log.Printf("Update result %v",res3)
+	log.Printf("Update result %v", res3)
 
 	req4 := v1.ReadAllRequest{
 		Api: apiVersion,
 	}
-
-	res4,err:=c.ReadAll(ctx,&req4)
-	if err!=nil{
-		log.Fatal("ReadAll 失败%v",err)
+	res4, err := c.ReadAll(ctx, &req4)
+	if err != nil {
+		log.Fatal("ReadAll 失败%v", err)
 	}
-	log.Printf("ReadAll result %v",res4)
+	log.Printf("ReadAll result %v", res4)
 
-	req5 :=v1.DeleteRequest{
+	req5 := v1.DeleteRequest{
 		Api: apiVersion,
-		Id: id,
+		Id:  id,
 	}
-	res5,err:=c.Delete(ctx,&req5)
-	if err!=nil{
-		log.Fatal("删除失败%v",err)
+	res5, err := c.Delete(ctx, &req5)
+	if err != nil {
+		log.Fatal("删除失败%v", err)
 	}
-	log.Printf("删除的结果%v",res5)
+	log.Printf("删除的结果%v", res5)
 }

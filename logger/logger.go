@@ -9,17 +9,18 @@ import (
 )
 
 var (
-	Log *zap.Logger
+	Log              *zap.Logger
 	customTimeFormat string
-	onceInit sync.Once
+	onceInit         sync.Once
 )
 
-func customTimeEncoder(t time.Time,enc zapcore.PrimitiveArrayEncoder){
+func customTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 	enc.AppendString(t.Format(customTimeFormat))
 }
 
-func Init(lvl int,timeFormat string) error{
+func Init(lvl int, timeFormat string) error {
 	var err error
+	// 只执行1次
 	onceInit.Do(func() {
 		globalLevel := zapcore.Level(lvl)
 
@@ -28,7 +29,7 @@ func Init(lvl int,timeFormat string) error{
 		})
 
 		lowPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-			return lvl>= globalLevel && lvl<zapcore.ErrorLevel
+			return lvl >= globalLevel && lvl < zapcore.ErrorLevel
 		})
 
 		consoleInfos := zapcore.Lock(os.Stdout)
@@ -36,20 +37,20 @@ func Init(lvl int,timeFormat string) error{
 
 		var useCustomTimeFormat bool
 		ecfg := zap.NewProductionEncoderConfig()
-		if len(timeFormat)>0{
+		if len(timeFormat) > 0 {
 			customTimeFormat = timeFormat
-			ecfg.EncodeTime=customTimeEncoder
+			ecfg.EncodeTime = customTimeEncoder
 			useCustomTimeFormat = true
 		}
 		consoleEncoder := zapcore.NewJSONEncoder(ecfg)
-		core:= zapcore.NewTee(
-			zapcore.NewCore(consoleEncoder,consoleErrors,highPriority),
-			zapcore.NewCore(consoleEncoder,consoleInfos,lowPriority),
-			)
+		core := zapcore.NewTee(
+			zapcore.NewCore(consoleEncoder, consoleErrors, highPriority),
+			zapcore.NewCore(consoleEncoder, consoleInfos, lowPriority),
+		)
 		Log = zap.New(core)
 		zap.RedirectStdLog(Log)
 
-		if !useCustomTimeFormat{
+		if !useCustomTimeFormat {
 			Log.Warn("time format for logger is not provided - use zap default")
 		}
 	})

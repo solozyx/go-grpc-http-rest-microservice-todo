@@ -40,6 +40,7 @@ message ToDo {
 }
 
 message CreateRequest {
+    // 版本,v1 v2 v3 扩展 程序解耦
     string api = 1;
     ToDo toDo = 2;
 }
